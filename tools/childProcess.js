@@ -5,7 +5,10 @@ module.exports = {
     return new Promise((resolve, reject) => {
       exec(command, (err, stdout, stderr) => {
         if (err || stderr) reject(err || stderr)
-        else resolve(stdout)
+        else {
+          console.log(stdout)
+          resolve(stdout)
+        }
       })
     })
   }
