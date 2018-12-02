@@ -26,6 +26,14 @@ module.exports = {
         else resolve(data)
       })
     })
+  },
+
+  createDirIfNotExists: (path) => {
+    return new Promise((resolve, reject) => {
+      fs.mkdir(path, () => {
+        resolve()
+      })
+    })
   }
 
 }

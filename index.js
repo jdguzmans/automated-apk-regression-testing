@@ -1,6 +1,8 @@
 (async () => {
   require('dotenv').config()
 
+  const { PACKAGE_NAME } = require('./config')
+
   const { exec } = require('./tools/childProcess')
   const { readdir } = require('./tools/fileSystem')
 
@@ -25,7 +27,7 @@
     await Promise.race([
       exec(`emulator -avd ${e1}`),
       exec(`emulator -avd ${e2}`),
-      new Promise((resolve, reject) => setTimeout(resolve, 60000))
+      new Promise((resolve, reject) => setTimeout(resolve, 10000))
     ])
     const devicesCrude = await exec('adb devices')
 
@@ -38,31 +40,23 @@
     const dataDir = './data'
 
     const baseDir = await readdir(`${dataDir}/input/baseline`)
-    const baseAPK = baseDir[0]
-    const baseAPKPath = `${dataDir}/input/baseline/${baseAPK}`
+    const baseAPK = baseDir[0].split('.apk')[0]
+    const baseAPKPath = `${dataDir}/input/baseline/${baseAPK}.apk`
 
     const compareToDir = await readdir(`${dataDir}/input/compareTo`)
+
     for (let compareToAPK of compareToDir) {
-      const compareToAPKPath = `${dataDir}/input/compareTo/${compareToAPK}`
+      const compareToAPKPath = `${dataDir}/input/compareTo/${compareToAPK}/${baseAPK}.apk`
       try {
-        await exec(`adb -s ${d1}  uninstall -r ${baseAPK}`)
+        await exec(`adb -s ${d1} uninstall ${PACKAGE_NAME}`)
       } catch (e) { console.log(e) }
 
       try {
-        await exec(`adb -s ${d2}  uninstall -r ${compareToAPK}`)
+        await exec(`adb -s ${d2} uninstall ${PACKAGE_NAME}`)
       } catch (e) { console.log(e) }
 
-      try {
-        await exec(`adb -s ${d1}  install ${baseAPKPath}`)
-      } catch (e) {
-        console.log(e)
-      }
-
-      try {
-        await exec(`adb -s ${d2}  install ${compareToAPKPath}`)
-      } catch (e) {
-        console.log(e)
-      }
+      await exec(`adb -s ${d1} install -r ${baseAPKPath}`)
+      await exec(`adb -s ${d2} install -r ${compareToAPKPath}`)
     }
   }
 
