@@ -1,4 +1,6 @@
 (async () => {
+  require('dotenv').config()
+
   const { exec } = require('./tools/childProcess')
   const { readdir } = require('./tools/fileSystem')
 
@@ -43,15 +45,24 @@
     for (let compareToAPK of compareToDir) {
       const compareToAPKPath = `${dataDir}/input/compareTo/${compareToAPK}`
       try {
-        await exec(`adb -s ${d1}  uninstall ${baseAPK}`)
+        await exec(`adb -s ${d1}  uninstall -r ${baseAPK}`)
       } catch (e) { console.log(e) }
 
       try {
-        await exec(`adb -s ${d2}  uninstall ${compareToAPK}`)
+        await exec(`adb -s ${d2}  uninstall -r ${compareToAPK}`)
       } catch (e) { console.log(e) }
 
-      await exec(`adb -s ${d1}  install ${baseAPKPath}`)
-      await exec(`adb -s ${d2}  install ${compareToAPKPath}`)
+      try {
+        await exec(`adb -s ${d1}  install ${baseAPKPath}`)
+      } catch (e) {
+        console.log(e)
+      }
+
+      try {
+        await exec(`adb -s ${d2}  install ${compareToAPKPath}`)
+      } catch (e) {
+        console.log(e)
+      }
     }
   }
 
