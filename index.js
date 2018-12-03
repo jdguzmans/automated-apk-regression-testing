@@ -1,42 +1,23 @@
 (async () => {
   require('dotenv').config()
 
+  const tests = require('./test')
+
+  const testCases = await tests()
+  console.log(testCases)
+
   const { PACKAGE_NAME } = require('./config')
 
+  const { getEmulatorPairs, runEmulatorPairs } = require('./tools/android')
   const { exec } = require('./tools/childProcess')
   const { readdir } = require('./tools/fileSystem')
 
-  const emulatorPairs = []
-  const emulatorsCrude = await exec('emulator -list-avds')
-  const emulatorsCrudeList = emulatorsCrude.split('\n')
-    .filter(line => line.length !== 0)
+  const emulatorPairs = await getEmulatorPairs()
+  const devicesPairs = await runEmulatorPairs(emulatorPairs)
 
-  for (let i = 0; i < emulatorsCrudeList.length - 1; i = i + 2) {
-    const e1 = emulatorsCrudeList[i]
-    const e1Parts = e1.split('-')
+  console.log(devicesPairs)
 
-    const e2 = emulatorsCrudeList[ i + 1 ]
-    const e2Parts = e2.split('-')
-
-    if (e1Parts[0] === 'pruebas' && e1Parts[0] === e2Parts[0] && e1Parts[1] === e2Parts[1]) {
-      emulatorPairs.push([ e1, e2 ])
-    }
-  }
-
-  for (let [e1, e2] of emulatorPairs) {
-    await Promise.race([
-      exec(`emulator -avd ${e1}`),
-      exec(`emulator -avd ${e2}`),
-      new Promise((resolve, reject) => setTimeout(resolve, 10000))
-    ])
-    const devicesCrude = await exec('adb devices')
-
-    const devices = devicesCrude.split('\n')
-      .filter(line => line.length !== 0 && line !== 'List of devices attached')
-      .map(line => line.split('\t')[0].trim())
-
-    const [ d1, d2 ] = devices
-
+  for (let [d1, d2] of devicesPairs) {
     const dataDir = './data'
 
     const baseDir = await readdir(`${dataDir}/input/baseline`)
@@ -57,16 +38,15 @@
 
       await exec(`adb -s ${d1} install -r ${baseAPKPath}`)
       await exec(`adb -s ${d2} install -r ${compareToAPKPath}`)
+
+      for (let testCase of testCases) {
+        const { steps } = testCase
+        for (let step of steps) {
+          await exec(`adb -s ${d1} ${step}`)
+          await exec(`adb -s ${d2} ${step}`)
+        }
+      }
     }
   }
-
   console.log('done')
-
-  // // adb -s emulator-5554  install ./data/input/baseline/com.evancharlton.mileage_3110.apk
-  // const t = await exec(`adb -s pruebas-pixel2-1 install ${baseAPKPath}`)
-  // console.log(t)
-  // // adb -s emulator-5556 install helloWorld.apk
-  // //   const r = await exec('emulator -list-avds')
-
-  // console.log(baseAPKPath)
 })()
