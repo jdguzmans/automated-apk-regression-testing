@@ -46,7 +46,14 @@ const runEmulatorPairs = async (emulatorPairs) => {
   return devicePairs
 }
 
+const timeOut = (timeout = 500) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(resolve, timeout)
+  })
+}
+
 module.exports = {
   getEmulatorPairs,
-  runEmulatorPairs
+  runEmulatorPairs,
+  timeOut
 }

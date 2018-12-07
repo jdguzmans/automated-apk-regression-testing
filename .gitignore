@@ -5,6 +5,12 @@ package-lock.json
 node_modules/
 
 *.odt
+*.odt#
+
 *.env
 
 *.keystore
+
+*.png
+*.jpeg
+report.txt

@@ -1,6 +1,16 @@
 const fs = require('fs')
 
 module.exports = {
+  createWriteStream: (path) => {
+    return fs.createWriteStream(path)
+  },
+
+  writeOnStream: (stream, text) => {
+    return new Promise((resolve, reject) => {
+      stream.write(text, resolve)
+    })
+  },
+
   readdir: (path) => {
     return new Promise((resolve, reject) => {
       fs.readdir(path, (err, files) => {
@@ -32,6 +42,15 @@ module.exports = {
     return new Promise((resolve, reject) => {
       fs.mkdir(path, () => {
         resolve()
+      })
+    })
+  },
+
+  saveRegression: (path, differences) => {
+    return new Promise(async (resolve, reject) => {
+      fs.writeFile(path, differences, (err, reject) => {
+        if (err) reject(err)
+        else resolve()
       })
     })
   }
