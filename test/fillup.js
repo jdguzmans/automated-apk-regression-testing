@@ -6,6 +6,12 @@ module.exports = (TestCase, file) => {
     },
     { description: 'taps the screen',
       command: 'shell input tap 100 100'
+    },
+    { description: 'taps the screen again',
+      command: 'shell input tap 200 500'
+    },
+    { description: 'taps the screen one last time',
+      command: 'shell input tap 500 200'
     }
   ]
 

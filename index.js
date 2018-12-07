@@ -52,6 +52,7 @@
     const baseAPKPath = `${inputDir}/baseline/${baseAPK}.apk`
 
     for (let compareToAPK of compareToAPKs) {
+      let mutated = false
       await createDirIfNotExists(`${outputDir}/${date}/${compareToAPK}`)
 
       await createDirIfNotExists(`${outputDir}/${date}/${compareToAPK}/base`)
@@ -102,9 +103,12 @@
 
           let result = 'OK'
 
-          if (misMatchPercentage < 10) {
-            result = `possible mutation of mismatch visual percentage ${numMismatchPercentage}, base at /${date}/${compareToAPK}/base/${i}.png, mutated at /${date}/${compareToAPK}/base/${i}.png and difference at /${date}/${compareToAPK}/difference/${i}.jpeg`
-            await writeOnStream(globalWriteStream, `- Found possible mutant at ${compareToAPK}\n`)
+          if (misMatchPercentage > 10) {
+            result = `possible mutation of mismatch visual percentage ${numMismatchPercentage}, at screenshot ${i}`
+            if (!mutated) {
+              await writeOnStream(globalWriteStream, `- Found possible mutant at ${compareToAPK}\n`)
+              mutated = true
+            }
           }
 
           await writeOnStream(localWriteStream, `${result}\n`)
